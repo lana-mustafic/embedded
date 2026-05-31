@@ -28,13 +28,12 @@ Pushes to `main` deploy via [GitHub Actions](.github/workflows/deploy.yml).
 
 ### First-time setup (required once)
 
-If deploy fails with `Failed to create deployment (status: 404)`:
+1. Wait for [Actions](https://github.com/lana-mustafic/embedded/actions) to finish (pushes `dist` to the **`gh-pages`** branch).
+2. Open [Settings → Pages](https://github.com/lana-mustafic/embedded/settings/pages)
+3. **Build and deployment** → **Source**: **Deploy from a branch**
+4. **Branch**: `gh-pages` → folder **`/ (root)`** → **Save**
 
-1. Open [Settings → Pages](https://github.com/lana-mustafic/embedded/settings/pages)
-2. Under **Build and deployment** → **Source**, choose **GitHub Actions** (not “Deploy from a branch”)
-3. Re-run the workflow: [Actions](https://github.com/lana-mustafic/embedded/actions) → latest run → **Re-run all jobs**
-
-If you do not see **GitHub Actions** as a source option, pick **Deploy from a branch** → `main` → `/ (root)` → Save, then switch **Source** back to **GitHub Actions**.
+If Actions cannot push: **Settings → Actions → General** → **Workflow permissions** → **Read and write permissions** → Save.
 
 The app is served at `/embedded/` (see `base` in `vite.config.js`).
 
