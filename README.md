@@ -2,6 +2,8 @@
 
 Interactive web app for learning FreeRTOS concepts: task scheduling, LED patterns, timer interrupts, and mutexes.
 
+**Live demo:** https://lana-mustafic.github.io/embedded/
+
 ## Run locally
 
 ```bash
@@ -17,6 +19,17 @@ Open the URL shown in the terminal (usually http://localhost:5173).
 npm run build
 npm run preview
 ```
+
+## GitHub Pages
+
+Pushes to `main` deploy automatically via [GitHub Actions](.github/workflows/deploy.yml).
+
+If the site does not load after the first deploy:
+
+1. Open **Settings → Pages** in the repo
+2. Under **Build and deployment**, set **Source** to **GitHub Actions**
+
+The app is served at `/embedded/` (see `base` in `vite.config.js`).
 
 ## Modules
 
