@@ -1,65 +1,65 @@
 const TEMPLATES = [
   {
     prompt:
-      'Three LED tasks: T1 (priority 3, pin A1), T2 (priority 1, pin A3), T3 (priority 2, pin A5). You need execution order T1 → T2 → T1 → T2 → T3 → T3 without changing priorities. Best approach?',
+      'Tri LED taska: T1 (prioritet 3, pin A1), T2 (prioritet 1, pin A3), T3 (prioritet 2, pin A5). Treba red izvršavanja T1 → T2 → T1 → T2 → T3 → T3 bez mijenjanja prioriteta. Najbolji pristup?',
     correct: 'suspend',
     options: ['suspend', 'notify', 'timer', 'mutex'],
     explanation:
-      'Suspend/resume lets a controller (or higher task) pause T3 and alternate T1/T2 explicitly while keeping priority rules for Ready tasks.',
+      'Suspend/resume omogućuje kontrolnom tasku pauzirati T3 i izmjenjivati T1/T2 dok Ready taskovi i dalje poštuju pravila prioriteta.',
     pseudocode: `vTaskSuspend(task3Handle);
-// run T1 slice, then T2, repeat pattern
-vTaskResume(task3Handle); when needed`,
+// pokreni T1, zatim T2, ponovi uzorak
+vTaskResume(task3Handle); // kad treba`,
   },
   {
     prompt:
-      'Task A produces a sensor reading; Task B toggles LED only when new data exists. Minimal overhead signaling?',
+      'Task A čita senzor; Task B pali LED samo kad ima novih podataka. Signalizacija s minimalnim overheadom?',
     correct: 'notify',
     options: ['suspend', 'notify', 'timer', 'mutex'],
     explanation:
-      'taskNotify is ideal for one-to-one wake-up with very low RAM cost compared to a queue.',
+      'taskNotify je idealan za probuditi jedan task uz vrlo mali utrošak RAM-a u odnosu na red.',
     pseudocode: `xTaskNotifyGive(taskBHandle);
-// in Task B:
+// u Task B:
 ulTaskNotifyTake(pdTRUE, portMAX_DELAY);`,
   },
   {
     prompt:
-      'LED1 must toggle every 200 ms and LED2 every 500 ms independently, regardless of what tasks are doing. Best mechanism?',
+      'LED1 mora se preklopiti svakih 200 ms, LED2 svakih 500 ms, neovisno o ostalim taskovima. Najbolji mehanizam?',
     correct: 'timer',
     options: ['suspend', 'notify', 'timer', 'mutex'],
     explanation:
-      'Periodic hardware timer ISR sets flags at exact intervals; tasks or short ISRs react without blocking the whole program.',
+      'Hardverski timer ISR postavlja zastavice u točnim intervalima; taskovi reagiraju bez blokiranja cijelog programa.',
     pseudocode: `if (tickCount % 200 == 0) led1Flag = true;
 if (tickCount % 500 == 0) led2Flag = true;`,
   },
   {
     prompt:
-      'Two tasks both call digitalWrite on the same LED pin with different blink periods (500 ms vs 100 ms). Outputs are garbled. Fix?',
+      'Dva taska zovu digitalWrite na isti LED pin s različitim periodima (500 ms vs 100 ms). Izlaz je poremećen. Rješenje?',
     correct: 'mutex',
     options: ['suspend', 'notify', 'timer', 'mutex'],
     explanation:
-      'A mutex serializes access so only one task controls the LED at a time; the other waits.',
+      'Mutex serijalizira pristup — samo jedan task upravlja LED-om; drugi čeka.',
     pseudocode: `xSemaphoreTake(ledMutex, portMAX_DELAY);
-// use LED
+// koristi LED
 xSemaphoreGive(ledMutex);`,
   },
   {
     prompt:
-      'Pattern on two LEDs: A on, then B double-blink, then A, then B — repeating forever. Tasks must stay in sync. Primary tool?',
+      'Uzorak na dva LED-a: A uključen, zatim B dvostruko treptanje, pa A, pa B — beskonačno. Taskovi moraju ostati sinkronizirani. Glavni alat?',
     correct: 'notify',
     options: ['suspend', 'notify', 'timer', 'mutex'],
     explanation:
-      'Semaphores or taskNotify coordinate sequence between tasks (handshake). Mutex is for shared resource protection, not sequencing.',
-    pseudocode: `xSemaphoreGive(sync); // task A done
-xSemaphoreTake(sync, portMAX_DELAY); // task B waits`,
+      'Semafori ili taskNotify koordiniraju redoslijed (handshake). Mutex štiti dijeljeni resurs, ne redoslijed koraka.',
+    pseudocode: `xSemaphoreGive(sync); // task A gotov
+xSemaphoreTake(sync, portMAX_DELAY); // task B čeka`,
   },
   {
     prompt:
-      'You must stop Task2 LED blinking during an exam demo but keep Task1 running. What do you call?',
+      'Na demo ispitu moraš zaustaviti treptanje LED-a na Task2, a Task1 nastavlja raditi. Koju funkciju koristiš?',
     correct: 'suspend',
     options: ['suspend', 'notify', 'timer', 'mutex'],
-    explanation: 'vTaskSuspend removes Task2 from scheduling until vTaskResume.',
+    explanation: 'vTaskSuspend uklanja Task2 iz raspoređivanja dok ga vTaskResume ne vrati.',
     pseudocode: `vTaskSuspend(task2Handle);
-// later:
+// kasnije:
 vTaskResume(task2Handle);`,
   },
 ];
@@ -73,6 +73,6 @@ export function generateExamQuestion() {
 export const APPROACH_LABELS = {
   suspend: 'taskSuspend / taskResume',
   notify: 'taskNotify',
-  timer: 'Timer interrupt',
+  timer: 'Timer prekid',
   mutex: 'Mutex',
 };

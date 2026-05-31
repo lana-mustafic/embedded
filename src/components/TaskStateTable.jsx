@@ -1,3 +1,5 @@
+import { STATE_LABELS } from '../data/i18n';
+
 const STATE_CLASS = {
   Running: 'state-running',
   Ready: 'state-ready',
@@ -11,9 +13,9 @@ export default function TaskStateTable({ tasks, highlight }) {
       <thead>
         <tr>
           <th>Task</th>
-          <th>Priority</th>
-          <th>LED Pin</th>
-          <th>State</th>
+          <th>Prioritet</th>
+          <th>LED pin</th>
+          <th>Stanje</th>
         </tr>
       </thead>
       <tbody>
@@ -29,7 +31,7 @@ export default function TaskStateTable({ tasks, highlight }) {
             </td>
             <td>
               <span className={`state-badge ${STATE_CLASS[t.state]}`}>
-                {t.state}
+                {STATE_LABELS[t.state] ?? t.state}
               </span>
             </td>
           </tr>

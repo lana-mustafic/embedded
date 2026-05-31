@@ -2,23 +2,22 @@ import CodeBlock from '../components/CodeBlock';
 import { CODE_EXAMPLES } from '../data/codeExamples';
 
 const SECTIONS = [
-  { key: 'scheduler', title: 'Task scheduler (priorities + suspend)' },
-  { key: 'notify', title: 'taskNotify coordination' },
-  { key: 'ledPattern', title: 'LED pattern with synchronization' },
-  { key: 'timer', title: 'Timer interrupt + flags' },
-  { key: 'mutex', title: 'Mutex — safe shared LED' },
-  { key: 'mutexBad', title: 'Without mutex (race condition)' },
+  { key: 'scheduler', title: 'Raspoređivač (prioriteti + suspend)' },
+  { key: 'notify', title: 'taskNotify koordinacija' },
+  { key: 'ledPattern', title: 'LED uzorak sa sinkronizacijom' },
+  { key: 'timer', title: 'Timer prekid + zastavice' },
+  { key: 'mutex', title: 'Mutex — siguran dijeljeni LED' },
+  { key: 'mutexBad', title: 'Bez mutexa (race condition)' },
 ];
 
 export default function CodeExamplesPage() {
   return (
     <section className="module">
       <header className="module-header">
-        <h2>Code Examples</h2>
+        <h2>Primjeri koda</h2>
         <p>
-          Beginner-friendly Arduino / FreeRTOS-style pseudocode for each lab
-          module. Copy structure into exam answers — adjust pin names to match
-          the question.
+          Jednostavan Arduino / FreeRTOS pseudokod za svaki modul. Prepiši
+          strukturu u odgovor na ispitu — prilagodi pinove prema zadatku.
         </p>
       </header>
 

@@ -19,30 +19,29 @@ function buildSteps(method, useController) {
   const suspended = new Set(useController && method === 'suspend' ? ['Task3'] : []);
 
   SEQUENCE.forEach((running, idx) => {
-    const others = BASE_TASKS.filter((t) => t.id !== running);
     let explanation = '';
 
     if (method === 'suspend') {
       if (useController && idx === 0) {
         explanation =
-          'Controller Task4 calls vTaskSuspend(Task3). Task3 is no longer Ready, so it cannot compete for CPU.';
+          'Kontrolni Task4 zove vTaskSuspend(Task3). Task3 više nije Ready i ne natječe se za CPU.';
       } else if (running === 'Task1' || running === 'Task2') {
-        explanation = `**${running}** runs because among Ready tasks, it has the highest priority (Task1=3, Task2=1). Task3 is Suspended, so the scheduler alternates between Task1 and Task2 when both yield.`;
+        explanation = `${running} radi jer među Ready taskovima ima najviši prioritet (Task1=3, Task2=1). Task3 je obustavljen, pa raspoređivač izmjenjuje Task1 i Task2 kad oba yieldaju.`;
       } else {
         explanation = useController
-          ? 'Controller resumes Task3 for its slots. Task3 (priority 2) runs when Task1 and Task2 are not Ready.'
-          : '**Task3** (priority 2) runs when higher-priority tasks are blocked or not Ready.';
+          ? 'Kontroler nastavlja Task3 u njegovim koracima. Task3 (prioritet 2) radi kad Task1 i Task2 nisu Ready.'
+          : 'Task3 (prioritet 2) radi kad višeprioritetni taskovi nisu Ready ili su blokirani.';
       }
       if (useController && idx === SEQUENCE.length - 1) {
-        explanation += ' Controller can vTaskResume(Task3) after the pattern completes.';
+        explanation += ' Kontroler može vTaskResume(Task3) nakon završetka uzorka.';
       }
     } else if (method === 'notify') {
       explanation =
         idx < 4
-          ? `**${running}** was notified (xTaskNotifyGive). It woke from Waiting → Running. Other tasks wait for their notify.`
-          : `**${running}** receives notify for the third phase. Lower-priority tasks stay Waiting until signaled.`;
+          ? `${running} je primio obavijest (xTaskNotifyGive). Prešao je iz Čeka → Izvršava se. Ostali čekaju svoj notify.`
+          : `${running} prima notify u trećoj fazi. Nižeprioritetni taskovi ostaju u Čeka dok ne dobiju signal.`;
     } else {
-      explanation = `Preemptive scheduling picks **${running}** for step ${idx + 1} of the exam sequence. Higher priority Ready tasks run first; delays make others Ready.`;
+      explanation = `Preemptivno raspoređivanje bira ${running} za korak ${idx + 1} ispita. Prvo Ready taskovi s višim prioritetom; kašnjenja čine druge spremnima.`;
     }
 
     const taskStates = BASE_TASKS.map((t) => {
@@ -106,15 +105,15 @@ export default function TaskScheduler() {
   return (
     <section className="module">
       <header className="module-header">
-        <h2>Task Scheduler Simulator</h2>
+        <h2>Simulator raspoređivača taskova</h2>
         <p>
-          See how FreeRTOS picks tasks by priority, pins, and state — and how
-          suspend/resume or notify changes the exam sequence.
+          Pogledaj kako FreeRTOS bira taskove po prioritetu, pinu i stanju — i
+          kako suspend/resume ili notify mijenja redoslijed s ispita.
         </p>
       </header>
 
       <div className="card controls-card">
-        <label className="control-label">Execution method</label>
+        <label className="control-label">Način izvršavanja</label>
         <div className="btn-group">
           {[
             ['suspend', 'taskSuspend / taskResume'],
@@ -144,28 +143,25 @@ export default function TaskScheduler() {
                 reset();
               }}
             />
-            Include controller Task4 (priority 4)
+            Uključi kontrolni Task4 (prioritet 4)
           </label>
         )}
       </div>
 
       <div className="grid-2">
         <div className="card">
-          <h3>Task states</h3>
-          <TaskStateTable
-            tasks={displayTasks}
-            highlight={step.running}
-          />
+          <h3>Stanja taskova</h3>
+          <TaskStateTable tasks={displayTasks} highlight={step.running} />
           {useController && method === 'suspend' && (
             <p className="hint">
-              Task4 (controller): priority 4 — suspends/resumes others to
-              force sequence T1→T2→T1→T2→T3→T3.
+              Task4 (kontroler): prioritet 4 — suspend/resume drugih za redoslijed
+              T1→T2→T1→T2→T3→T3.
             </p>
           )}
         </div>
 
         <div className="card">
-          <h3>LED board</h3>
+          <h3>LED ploča</h3>
           <div className="led-row">
             {BASE_TASKS.map((t) => (
               <Led
@@ -177,15 +173,15 @@ export default function TaskScheduler() {
             ))}
           </div>
           <p className="running-label">
-            Now running: <strong>{step.running}</strong> — pin{' '}
+            Trenutno radi: <strong>{step.running}</strong> — pin{' '}
             <code>{BASE_TASKS.find((x) => x.id === step.running).pin}</code>{' '}
-            ON
+            UKLJUČEN
           </p>
         </div>
       </div>
 
       <div className="card timeline-card">
-        <h3>Execution sequence</h3>
+        <h3>Redoslijed izvršavanja</h3>
         <div className="sequence-bar">
           {SEQUENCE.map((t, i) => (
             <button
@@ -202,13 +198,13 @@ export default function TaskScheduler() {
           ))}
         </div>
         <p className="step-counter">
-          Step {stepIndex + 1} of {steps.length}
+          Korak {stepIndex + 1} od {steps.length}
         </p>
       </div>
 
       <div className="card explanation-card">
-        <h3>What happened this step?</h3>
-        <p className="explanation-text">{step.explanation.replace(/\*\*/g, '')}</p>
+        <h3>Što se dogodilo u ovom koraku?</h3>
+        <p className="explanation-text">{step.explanation}</p>
       </div>
 
       <div className="transport">
@@ -220,17 +216,17 @@ export default function TaskScheduler() {
           className="btn btn-secondary"
           onClick={() => setStepIndex((i) => (i - 1 + steps.length) % steps.length)}
         >
-          Previous
+          Prethodni
         </button>
         <button type="button" className="btn btn-primary" onClick={next}>
-          Next step
+          Sljedeći korak
         </button>
         <button
           type="button"
           className={`btn ${playing ? 'btn-danger' : 'btn-primary'}`}
           onClick={() => setPlaying(!playing)}
         >
-          {playing ? 'Stop auto' : 'Auto play'}
+          {playing ? 'Zaustavi auto' : 'Automatski'}
         </button>
       </div>
 
@@ -241,7 +237,7 @@ export default function TaskScheduler() {
       </div>
 
       <CodeBlock
-        title="Pseudocode"
+        title="Pseudokod"
         code={method === 'notify' ? CODE_EXAMPLES.notify : CODE_EXAMPLES.scheduler}
       />
     </section>

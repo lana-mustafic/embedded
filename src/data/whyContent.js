@@ -1,32 +1,32 @@
 export const WHY_TOPICS = {
   priority: {
-    title: 'Why does priority matter?',
-    body: `The RTOS scheduler always picks the **highest-priority Ready task**. Lower-priority tasks only run when nothing more urgent is ready.
+    title: 'Zašto je prioritet važan?',
+    body: `RTOS raspoređivač uvijek bira **Ready task s najvišim prioritetom**. Taskovi s nižim prioritetom rade samo kad nema hitnijeg spremnog taska.
 
-On your exam, if Task2 has priority 1 and Task1 has priority 3, Task1 wins whenever both are Ready. Priority is not "who was created first" — it is "who gets the CPU next."`,
+Na ispitu: ako Task2 ima prioritet 1, a Task1 prioritet 3, Task1 pobjeđuje kad su oba Ready. Prioritet nije „tko je prvi kreiran” — nego **tko sljedeći dobiva CPU**.`,
   },
   suspend: {
-    title: 'Why use taskSuspend / taskResume?',
-    body: `**Suspend** removes a task from the Ready list without deleting it. **Resume** puts it back.
+    title: 'Zašto taskSuspend / taskResume?',
+    body: `**Suspend** uklanja task s Ready liste bez brisanja. **Resume** ga vraća.
 
-Use this when you want to **pause** work temporarily (e.g. stop blinking an LED) while other tasks keep running. The suspended task uses almost no CPU until resumed.`,
+Koristi kad želiš **privremeno pauzirati** rad (npr. ugasiti treptanje LED-a) dok ostali taskovi rade. Obustavljeni task gotovo ne troši CPU dok ga ne nastaviš.`,
   },
   notify: {
-    title: 'Why is taskNotify often better?',
-    body: `**taskNotify** sends a lightweight signal directly to one task (like a tiny mailbox). The receiver can block with \`ulTaskNotifyTake()\` until data arrives.
+    title: 'Zašto je taskNotify često bolji?',
+    body: `**taskNotify** šalje lagan signal izravno jednom tasku (mali „mailbox”). Primatelj može blokirati s \`ulTaskNotifyTake()\` dok ne stigne obavijest.
 
-Compared to a full queue or semaphore for a single "wake up" event, notify is **faster and uses less RAM** — perfect when one task tells another "your turn" or "data ready."`,
+U odnosu na puni red ili semafor za jedan „probudi se” događaj, notify je **brži i troši manje RAM-a** — idealno kad jedan task kaže drugom „tvoj red” ili „podaci spremni”.`,
   },
   timer: {
-    title: 'Why is a timer interrupt different from delay()?',
-    body: `**vTaskDelay()** blocks the *task* — that task stops running and others can use the CPU.
+    title: 'Zašto je timer prekid drugačiji od delay()?',
+    body: `**vTaskDelay()** blokira *task* — taj task prestane raditi, ostali mogu koristiti CPU.
 
-A **timer interrupt** fires in hardware on a fixed schedule. The ISR should be **very short**: set a flag or give a semaphore, then return. Heavy work belongs in a task, not inside the ISR — otherwise you block interrupts and miss ticks.`,
+**Timer prekid** hardver pali u fiksnom ritmu. ISR treba biti **vrlo kratak**: postavi zastavicu ili daj semafor, pa izađi. Težak posao ide u task, ne u ISR — inače blokiraš prekide i propuštaš tickove.`,
   },
   mutex: {
-    title: 'Why is a mutex needed?',
-    body: `Two tasks updating the **same LED or serial port** at the same time cause a **race condition**: outputs get mixed and timing breaks.
+    title: 'Zašto je potreban mutex?',
+    body: `Dva taska koja istovremeno pišu na **isti LED ili serijski port** uzrokuju **race condition**: izlazi se miješaju i vrijeme puca.
 
-A **mutex** ensures only one task "owns" the resource at a time. Others **wait** until it is unlocked. Always release the mutex when done, or other tasks starve.`,
+**Mutex** osigurava da samo jedan task u jednom trenutku „posjeduje” resurs. Ostali **čekaju** dok se ne otključa. Uvijek oslobodi mutex kad završiš, inače ostali taskovi gladuju.`,
   },
 };

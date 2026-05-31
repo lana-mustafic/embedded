@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import Led from '../components/Led';
 import WhyButton from '../components/WhyButton';
 import CodeBlock from '../components/CodeBlock';
+import { STATE_LABELS } from '../data/i18n';
 import { WHY_TOPICS } from '../data/whyContent';
 import { CODE_EXAMPLES } from '../data/codeExamples';
 
@@ -31,40 +32,38 @@ export default function MutexSimulator() {
       tickRef.current += 1;
       const tick = tickRef.current;
       const fastTurn = tick % 2 === 0;
-      const activeTask = fastTurn ? 'Task Fast (100ms)' : 'Task Slow (500ms)';
+      const activeTask = fastTurn ? 'Task Brzi (100 ms)' : 'Task Spori (500 ms)';
 
       if (!useMutex) {
-        // Race: both write LED without coordination
         setTask1State(fastTurn ? 'Running' : 'Ready');
         setTask2State(fastTurn ? 'Ready' : 'Running');
         setLedOn((v) => !v);
         if (tick % 3 === 0) {
-          addLog(`⚠ Conflict: both tasks wrote LED at ~${tick * 150}ms — garbled timing`);
+          addLog(`⚠ Sukob: oba taska pišu LED @ ~${tick * 150} ms — poremećeno vrijeme`);
         } else {
-          addLog(`${activeTask} wrote LED (no protection)`);
+          addLog(`${activeTask} piše na LED (bez zaštite)`);
         }
         setOwner(null);
         setMutexLocked(false);
       } else {
-        // Mutex: only one owns LED
         if (!mutexLocked) {
           setMutexLocked(true);
           setOwner(activeTask);
           setTask1State(fastTurn ? 'Running' : 'Waiting');
           setTask2State(fastTurn ? 'Ready' : 'Waiting');
           setLedOn((v) => !v);
-          addLog(`${activeTask} took mutex → LED toggle`);
+          addLog(`${activeTask} uzeo mutex → preklapanje LED-a`);
           setTimeout(() => {
             setMutexLocked(false);
             setOwner(null);
             setTask1State('Ready');
             setTask2State('Ready');
-            addLog('Mutex released');
+            addLog('Mutex oslobođen');
           }, 400);
         } else {
           setTask1State('Waiting');
           setTask2State('Waiting');
-          addLog(`${activeTask} blocked — mutex locked by ${owner}`);
+          addLog(`${activeTask} blokiran — mutex drži ${owner}`);
         }
       }
     }, 600);
@@ -86,15 +85,15 @@ export default function MutexSimulator() {
   return (
     <section className="module">
       <header className="module-header">
-        <h2>Mutex Simulator</h2>
+        <h2>Simulator mutexa</h2>
         <p>
-          Two tasks share one LED: fast blink (100 ms) vs slow blink (500 ms).
-          Compare chaos without a mutex vs safe access with one.
+          Dva taska dijele jedan LED: brzo (100 ms) vs sporo (500 ms) treptanje.
+          Usporedi kaos bez mutexa i siguran pristup s mutexom.
         </p>
       </header>
 
       <div className="card controls-card">
-        <label className="control-label">Protection</label>
+        <label className="control-label">Zaštita</label>
         <div className="btn-group">
           <button
             type="button"
@@ -104,7 +103,7 @@ export default function MutexSimulator() {
               reset();
             }}
           >
-            Without mutex (race)
+            Bez mutexa (race)
           </button>
           <button
             type="button"
@@ -114,40 +113,40 @@ export default function MutexSimulator() {
               reset();
             }}
           >
-            With mutex
+            S mutexom
           </button>
         </div>
       </div>
 
       <div className="grid-2">
         <div className="card">
-          <h3>Shared LED</h3>
-          <Led label="Shared LED" pin="Pin 13" on={ledOn} size="lg" />
+          <h3>Dijeljeni LED</h3>
+          <Led label="Dijeljeni LED" pin="Pin 13" on={ledOn} size="lg" />
           <div className={`mutex-status ${mutexLocked ? 'locked' : 'unlocked'}`}>
-            Mutex: {mutexLocked ? '🔒 Locked' : '🔓 Unlocked'}
-            {owner && <span> — owner: {owner}</span>}
+            Mutex: {mutexLocked ? '🔒 Zaključan' : '🔓 Otključan'}
+            {owner && <span> — vlasnik: {owner}</span>}
           </div>
         </div>
 
         <div className="card">
-          <h3>Tasks</h3>
+          <h3>Taskovi</h3>
           <table className="task-table mini">
             <tbody>
               <tr>
-                <td>Task Fast</td>
-                <td>100 ms blink</td>
+                <td>Task Brzi</td>
+                <td>treptanje 100 ms</td>
                 <td>
                   <span className={`state-badge state-${task1State.toLowerCase()}`}>
-                    {task1State}
+                    {STATE_LABELS[task1State]}
                   </span>
                 </td>
               </tr>
               <tr>
-                <td>Task Slow</td>
-                <td>500 ms blink</td>
+                <td>Task Spori</td>
+                <td>treptanje 500 ms</td>
                 <td>
                   <span className={`state-badge state-${task2State.toLowerCase()}`}>
-                    {task2State}
+                    {STATE_LABELS[task2State]}
                   </span>
                 </td>
               </tr>
@@ -155,24 +154,23 @@ export default function MutexSimulator() {
           </table>
           {!useMutex && (
             <p className="warn-text">
-              Both tasks call digitalWrite on the same pin → unpredictable
-              pattern on the exam board.
+              Oba taska zovu digitalWrite na isti pin → nepredvidiv uzorak na
+              ploči s ispita.
             </p>
           )}
           {useMutex && (
             <p className="ok-text">
-              Only the task holding the mutex can change the LED; the other
-              waits.
+              Samo task koji drži mutex mijenja LED; drugi čeka.
             </p>
           )}
         </div>
       </div>
 
       <div className="card log-card">
-        <h3>Event log</h3>
+        <h3>Dnevnik događaja</h3>
         <ul className="event-log">
           {log.length === 0 && (
-            <li className="muted">Press Run to see events…</li>
+            <li className="muted">Pritisni Pokreni za prikaz događaja…</li>
           )}
           {log.map((line, i) => (
             <li key={i}>{line}</li>
@@ -189,13 +187,13 @@ export default function MutexSimulator() {
           className={`btn ${playing ? 'btn-danger' : 'btn-primary'}`}
           onClick={() => setPlaying(!playing)}
         >
-          {playing ? 'Stop' : 'Run simulation'}
+          {playing ? 'Zaustavi' : 'Pokreni simulaciju'}
         </button>
       </div>
 
       <WhyButton content={WHY_TOPICS.mutex} />
       <CodeBlock
-        title={useMutex ? 'With mutex' : 'Without mutex (problem)'}
+        title={useMutex ? 'S mutexom' : 'Bez mutexa (problem)'}
         code={useMutex ? CODE_EXAMPLES.mutex : CODE_EXAMPLES.mutexBad}
       />
     </section>

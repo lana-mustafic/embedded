@@ -25,10 +25,10 @@ export default function ExamPractice() {
   return (
     <section className="module">
       <header className="module-header">
-        <h2>Exam Practice Mode</h2>
+        <h2>Vježba za ispit</h2>
         <p>
-          Random exam-style prompts. Pick the best RTOS approach, then read the
-          explanation and pseudocode.
+          Nasumična pitanja u stilu ispita. Odaberi najbolji RTOS pristup, zatim
+          pročitaj objašnjenje i pseudokod.
         </p>
       </header>
 
@@ -66,25 +66,25 @@ export default function ExamPractice() {
               disabled={!selected}
               onClick={submit}
             >
-              Check answer
+              Provjeri odgovor
             </button>
           ) : (
             <div className={`result-banner ${correct ? 'result-ok' : 'result-bad'}`}>
               {correct
-                ? 'Correct — good choice for this scenario.'
-                : `Not quite. Best approach: ${APPROACH_LABELS[question.correct]}.`}
+                ? 'Točno — dobar izbor za ovaj scenarij.'
+                : `Nije točno. Najbolji pristup: ${APPROACH_LABELS[question.correct]}.`}
             </div>
           )}
           <button type="button" className="btn btn-secondary" onClick={newQuestion}>
-            New question
+            Novo pitanje
           </button>
         </div>
 
         {submitted && (
           <div className="exam-feedback">
-            <h3>Explanation</h3>
+            <h3>Objašnjenje</h3>
             <p>{question.explanation}</p>
-            <CodeBlock title="Model pseudocode" code={question.pseudocode} />
+            <CodeBlock title="Uzorak pseudokoda" code={question.pseudocode} />
           </div>
         )}
       </div>

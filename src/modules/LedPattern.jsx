@@ -5,13 +5,12 @@ import CodeBlock from '../components/CodeBlock';
 import { WHY_TOPICS } from '../data/whyContent';
 import { CODE_EXAMPLES } from '../data/codeExamples';
 
-// Pattern: A, B B-fast, A, B, repeat
 const PATTERN = [
-  { led: 'A', duration: 600, label: 'A ON' },
-  { led: 'B', duration: 350, label: 'B ON' },
-  { led: 'B', duration: 200, label: 'B quick' },
-  { led: 'A', duration: 600, label: 'A ON' },
-  { led: 'B', duration: 500, label: 'B ON' },
+  { led: 'A', duration: 600, label: 'A uključen' },
+  { led: 'B', duration: 350, label: 'B uključen' },
+  { led: 'B', duration: 200, label: 'B brzo' },
+  { led: 'A', duration: 600, label: 'A uključen' },
+  { led: 'B', duration: 500, label: 'B uključen' },
 ];
 
 export default function LedPattern() {
@@ -44,11 +43,11 @@ export default function LedPattern() {
   return (
     <section className="module">
       <header className="module-header">
-        <h2>LED Pattern Simulator</h2>
+        <h2>Simulator LED uzorka</h2>
         <p>
-          Pattern: <strong>A</strong> → <strong>B</strong> (quick second B) →{' '}
-          <strong>A</strong> → <strong>B</strong> → repeat. Tasks coordinate with
-          semaphores or notify so order never drifts.
+          Uzorak: <strong>A</strong> → <strong>B</strong> (brzi drugi B) →{' '}
+          <strong>A</strong> → <strong>B</strong> → ponavljanje. Taskovi se
+          usklađuju semaforima ili notifyjem da redoslijed ne „pobjegne”.
         </p>
       </header>
 
@@ -68,7 +67,7 @@ export default function LedPattern() {
               <button
                 key={i}
                 type="button"
-                className={`timeline-node ${i === index ? 'node-active' : ''} ${p.led === 'B' && p.label.includes('quick') ? 'node-fast' : ''}`}
+                className={`timeline-node ${i === index ? 'node-active' : ''} ${p.label.includes('brzo') ? 'node-fast' : ''}`}
                 style={{ left: `${(i / PATTERN.length) * 100 + 4}%` }}
                 onClick={() => {
                   setIndex(i);
@@ -81,21 +80,22 @@ export default function LedPattern() {
             ))}
           </div>
           <p className="timeline-caption">
-            Step {index + 1}: {step.label} ({step.duration} ms)
+            Korak {index + 1}: {step.label} ({step.duration} ms)
           </p>
         </div>
 
         <div className="task-sync-diagram">
           <div className="sync-box">
             <span className="sync-task">Task A</span>
-            <span className="sync-arrow">→ give semaphore →</span>
+            <span className="sync-arrow">→ daj semafor →</span>
             <span className="sync-task">Task B</span>
-            <span className="sync-arrow">→ give back →</span>
+            <span className="sync-arrow">→ vrati →</span>
             <span className="sync-task">Task A</span>
           </div>
           <p className="hint">
-            Task A blinks LED A, then signals Task B. Task B does double-blink,
-            signals back. Without sync, both LEDs would drift out of phase.
+            Task A trepti LED A, zatim signalizira Task B. Task B radi dvostruko
+            treptanje i vraća signal. Bez sinkronizacije LED-ovi bi se
+            razmaknuli u fazi.
           </p>
         </div>
 
@@ -117,27 +117,27 @@ export default function LedPattern() {
               setIndex((i) => (i - 1 + PATTERN.length) % PATTERN.length)
             }
           >
-            Previous
+            Prethodni
           </button>
           <button
             type="button"
             className="btn btn-primary"
             onClick={() => setIndex((i) => (i + 1) % PATTERN.length)}
           >
-            Next
+            Sljedeći
           </button>
           <button
             type="button"
             className={`btn ${playing ? 'btn-danger' : 'btn-primary'}`}
             onClick={() => setPlaying(!playing)}
           >
-            {playing ? 'Pause' : 'Play timeline'}
+            {playing ? 'Pauza' : 'Pokreni vremensku crtu'}
           </button>
         </div>
       </div>
 
       <WhyButton content={WHY_TOPICS.notify} />
-      <CodeBlock title="Task + synchronization pseudocode" code={CODE_EXAMPLES.ledPattern} />
+      <CodeBlock title="Pseudokod — task + sinkronizacija" code={CODE_EXAMPLES.ledPattern} />
     </section>
   );
 }

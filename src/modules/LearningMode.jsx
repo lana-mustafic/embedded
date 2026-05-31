@@ -4,69 +4,69 @@ import { WHY_TOPICS } from '../data/whyContent';
 const CONCEPTS = [
   {
     id: 'tasks',
-    title: 'Tasks & scheduler',
+    title: 'Taskovi i raspoređivač',
     summary:
-      'A task is like a mini-program with its own loop. The scheduler runs the highest-priority Ready task. When it blocks (delay) or is suspended, others run.',
+      'Task je kao mali program sa svojom petljom. Raspoređivač pokreće Ready task s najvišim prioritetom. Kad blokira (delay) ili je obustavljen, rade drugi.',
     examTip:
-      'Exam boards list priorities and pins — always mark who is Ready vs Suspended vs Waiting.',
+      'Na ispitu su navedeni prioriteti i pinovi — uvijek označi tko je Spreman, Obustavljen ili Čeka.',
     whyKey: 'priority',
   },
   {
     id: 'suspend',
     title: 'taskSuspend / taskResume',
     summary:
-      'Pause a task without deleting it. Useful to force a custom order (e.g. hide Task3 until Task1 and Task2 alternate).',
+      'Pauzira task bez brisanja. Korisno za prilagođeni redoslijed (npr. sakrij Task3 dok se Task1 i Task2 izmjenjuju).',
     examTip:
-      'Look for "stop this LED but keep others" — that is suspend, not delete.',
+      'Traži se „zaustavi ovaj LED, ostali rade” — to je suspend, ne brisanje taska.',
     whyKey: 'suspend',
   },
   {
     id: 'notify',
     title: 'taskNotify',
     summary:
-      'One task signals another directly. Lighter than a queue when you only need "wake up".',
-    examTip:
-      'Pair with ulTaskNotifyTake in the receiver task.',
+      'Jedan task signalizira drugome izravno. Lakše od reda kad treba samo „probudi se”.',
+    examTip: 'U paru s ulTaskNotifyTake u tasku koji prima signal.',
     whyKey: 'notify',
   },
   {
     id: 'timer',
-    title: 'Timer interrupt',
+    title: 'Timer prekid',
     summary:
-      'Hardware counts time in the background. ISR sets flags; tasks do the work.',
+      'Hardver broji vrijeme u pozadini. ISR postavlja zastavice; taskovi rade posao.',
     examTip:
-      'If the question says "exactly every X ms regardless of tasks" → timer ISR.',
+      'Ako piše „točno svakih X ms bez obzira na taskove” → timer ISR.',
     whyKey: 'timer',
   },
   {
     id: 'mutex',
     title: 'Mutex',
     summary:
-      'Protects one shared resource (one LED, UART, bus). Take before use, give after.',
+      'Štiti jedan dijeljeni resurs (jedan LED, UART, sabirnica). Uzmi prije korištenja, oslobodi poslije.',
     examTip:
-      'Two tasks, one pin, garbled output → mutex (or redesign so only one task owns the pin).',
+      'Dva taska, jedan pin, poremećen izlaz → mutex (ili samo jedan task na pinu).',
     whyKey: 'mutex',
   },
   {
     id: 'states',
-    title: 'Task states',
+    title: 'Stanja taska',
     summary: (
       <ul className="state-legend">
         <li>
-          <span className="state-badge state-running">Running</span> — on CPU now
+          <span className="state-badge state-running">Izvršava se</span> — trenutno na CPU-u
         </li>
         <li>
-          <span className="state-badge state-ready">Ready</span> — can run when selected
+          <span className="state-badge state-ready">Spreman</span> — može raditi kad ga raspoređivač odabere
         </li>
         <li>
-          <span className="state-badge state-waiting">Waiting</span> — blocked on notify/semaphore/delay
+          <span className="state-badge state-waiting">Čeka</span> — blokiran na notify/semaforu/delayu
         </li>
         <li>
-          <span className="state-badge state-suspended">Suspended</span> — removed until resume
+          <span className="state-badge state-suspended">Obustavljen</span> — uklonjen dok ga ne nastaviš
         </li>
       </ul>
     ),
-    examTip: 'Draw a small table in your exam answer — examiners love clear state columns.',
+    examTip:
+      'U odgovoru nacrtaj malu tablicu stanja — ispitivači vole jasne stupce.',
     whyKey: null,
   },
 ];
@@ -75,10 +75,10 @@ export default function LearningMode() {
   return (
     <section className="module">
       <header className="module-header">
-        <h2>Learning Mode</h2>
+        <h2>Način učenja</h2>
         <p>
-          Short concepts in plain English. Use simulators for motion; use this
-          page for vocabulary and exam phrasing.
+          Kratki pojmovi jednostavnim jezikom. Simulatori za pokret; ova stranica
+          za rječnik i formulacije s ispita.
         </p>
       </header>
 
@@ -90,7 +90,7 @@ export default function LearningMode() {
               {typeof c.summary === 'string' ? <p>{c.summary}</p> : c.summary}
             </div>
             <p className="exam-tip">
-              <strong>Exam tip:</strong> {c.examTip}
+              <strong>Savjet za ispit:</strong> {c.examTip}
             </p>
             {c.whyKey && <WhyButton content={WHY_TOPICS[c.whyKey]} />}
           </article>
@@ -98,14 +98,14 @@ export default function LearningMode() {
       </div>
 
       <div className="card study-path">
-        <h3>Suggested study path</h3>
+        <h3>Predloženi red učenja</h3>
         <ol>
-          <li>Task Scheduler — priorities and the T1→T2→T1→T2→T3→T3 sequence</li>
-          <li>LED Pattern — synchronization between tasks</li>
-          <li>Timer interrupt — ISR vs delay</li>
-          <li>Mutex — shared resource</li>
-          <li>Exam Practice — random questions</li>
-          <li>Code Examples — copy-friendly pseudocode</li>
+          <li>Raspoređivač — prioriteti i red T1→T2→T1→T2→T3→T3</li>
+          <li>LED uzorak — sinkronizacija između taskova</li>
+          <li>Timer prekid — ISR naspram delay-a</li>
+          <li>Mutex — dijeljeni resurs</li>
+          <li>Vježba ispita — nasumična pitanja</li>
+          <li>Primjeri koda — pseudokod za prepisivanje</li>
         </ol>
       </div>
     </section>

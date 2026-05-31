@@ -14,7 +14,7 @@ export default function WhyButton({ topic, content }) {
         onClick={() => setOpen(!open)}
         aria-expanded={open}
       >
-        Why? — {data.title}
+        Zašto? — {data.title}
       </button>
       {open && (
         <div className="why-panel">

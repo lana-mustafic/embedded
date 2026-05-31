@@ -9,14 +9,14 @@ import CodeExamplesPage from './modules/CodeExamplesPage';
 import './App.css';
 
 const NAV = [
-  { id: 'home', label: 'Home', icon: '◆' },
-  { id: 'scheduler', label: 'Task Scheduler', icon: '▣' },
-  { id: 'pattern', label: 'LED Pattern', icon: '◎' },
+  { id: 'home', label: 'Početna', icon: '◆' },
+  { id: 'scheduler', label: 'Raspoređivač', icon: '▣' },
+  { id: 'pattern', label: 'LED uzorak', icon: '◎' },
   { id: 'timer', label: 'Timer ISR', icon: '⏱' },
   { id: 'mutex', label: 'Mutex', icon: '🔐' },
-  { id: 'learn', label: 'Learning', icon: '📖' },
-  { id: 'exam', label: 'Exam Practice', icon: '✎' },
-  { id: 'code', label: 'Code Examples', icon: '</>' },
+  { id: 'learn', label: 'Učenje', icon: '📖' },
+  { id: 'exam', label: 'Vježba ispita', icon: '✎' },
+  { id: 'code', label: 'Primjeri koda', icon: '</>' },
 ];
 
 function Home({ setPage }) {
@@ -25,8 +25,8 @@ function Home({ setPage }) {
       <div className="hero">
         <h1>RTOS Lab</h1>
         <p className="hero-sub">
-          Interactive prep for Embedded Systems exams — FreeRTOS tasks, LEDs,
-          timers, and mutexes explained step by step.
+          Interaktivna priprema za ispit iz ugrađenih sustava — FreeRTOS taskovi,
+          LED-ovi, timeri i mutexi objašnjeni korak po korak.
         </p>
       </div>
       <div className="home-grid">
@@ -43,13 +43,13 @@ function Home({ setPage }) {
             <h3>{n.label}</h3>
             <p>
               {n.id === 'scheduler' &&
-                'Priorities, pins, suspend/notify, step-by-step T1→T2 sequence.'}
-              {n.id === 'pattern' && 'Coordinated A / B-B / A / B pattern.'}
-              {n.id === 'timer' && '200 ms & 500 ms blinks via ISR flags.'}
-              {n.id === 'mutex' && 'Race vs protected shared LED.'}
-              {n.id === 'learn' && 'Concept cards and Why? deep dives.'}
-              {n.id === 'exam' && 'Random questions with pseudocode answers.'}
-              {n.id === 'code' && 'Commented exam-style pseudocode.'}
+                'Prioriteti, pinovi, suspend/notify, korak-po-korak T1→T2→T3.'}
+              {n.id === 'pattern' && 'Sinkronizirani uzorak A / B-B / A / B.'}
+              {n.id === 'timer' && 'Treptanje 200 ms i 500 ms preko ISR zastavica.'}
+              {n.id === 'mutex' && 'Race condition vs zaštićeni dijeljeni LED.'}
+              {n.id === 'learn' && 'Kartice pojmova i „Zašto?” objašnjenja.'}
+              {n.id === 'exam' && 'Nasumična pitanja s pseudokodom.'}
+              {n.id === 'code' && 'Komentirani pseudokod za ispit.'}
             </p>
           </article>
         ))}
