@@ -29,8 +29,24 @@
   width: 10px;
   height: 10px;
   border-radius: 50%;
+  flex-shrink: 0;
   background: var(--success);
   box-shadow: 0 0 12px var(--success-glow);
+}
+
+.brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  line-height: 1.2;
+}
+
+.lang-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }
 
 .nav-item {

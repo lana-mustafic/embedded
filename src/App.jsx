@@ -78,7 +78,10 @@ export default function App() {
       <aside className="sidebar">
         <div className="brand" onClick={() => setPage('home')} role="button" tabIndex={0} onKeyDown={(e) => e.key === 'Enter' && setPage('home')}>
           <span className="brand-dot" />
-          RTOS Lab
+          <span className="brand-text">
+            RTOS Lab
+            <span className="lang-badge">Hrvatski</span>
+          </span>
         </div>
         <nav>
           {NAV.map((n) => (
