@@ -1,1 +1,235 @@
+/* USER CODE BEGIN Header */
+/**
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  */
+/* USER CODE END Header */
 
+#include "main.h"
+#include "cmsis_os.h"
+
+/* Private includes ----------------------------------------------------------*/
+/* USER CODE BEGIN Includes */
+#include "freeRTOS.h"
+#include "task.h"
+#include "semphr.h"
+#include "timers.h"
+/* USER CODE END Includes */
+
+/* Private variables ---------------------------------------------------------*/
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+
+/* USER CODE BEGIN PV */
+// Handleri za Prvi zadatak (s dirigentom)
+TaskHandle_t t1_handle;
+TaskHandle_t t2_handle;
+TaskHandle_t t3_handle;
+TaskHandle_t t4_dirigent_handle;
+
+// Handleri za Drugi zadatak (s tajmerom i lampicama)
+TaskHandle_t lampica1_handle;
+TaskHandle_t lampica2_handle;
+
+volatile int brojac_sekundi = 0;
+/* USER CODE END PV */
+
+/* Private function prototypes -----------------------------------------------*/
+void SystemClock_Config(void);
+static void MX_GPIO_Init(void);
+void StartDefaultTask(void *argument);
+
+/* USER CODE BEGIN PFP */
+// Prototipovi za Prvi zadatak
+void Task1_Zad1(void *argument);
+void Task2_Zad1(void *argument);
+void Task3_Zad1(void *argument);
+void Task4_Dirigent(void *argument);
+
+// Prototipovi za Drugi zadatak
+void Task1_Lampica(void *argument);
+void Task2_Lampica(void *argument);
+/* USER CODE END PFP */
+
+int main(void)
+{
+  HAL_Init();
+  SystemClock_Config();
+  MX_GPIO_Init();
+
+  osKernelInitialize();
+
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  
+  // --- KREIRANJE ZADATKA 1 (Dirigent i redoslijed: task1, task2, task1, task2, task3, task3) ---
+  xTaskCreate(Task1_Zad1, "T1_Z1", 256, NULL, 3, &t1_handle);
+  xTaskCreate(Task2_Zad1, "T2_Z1", 256, NULL, 1, &t2_handle);
+  xTaskCreate(Task3_Zad1, "T3_Z1", 256, NULL, 2, &t3_handle);
+  xTaskCreate(Task4_Dirigent, "Dirigent", 256, NULL, 4, &t4_dirigent_handle);
+
+  // --- KREIRANJE ZADATKA 2 (Timer interrupt i kružno paljenje lampica) ---
+  xTaskCreate(Task1_Lampica, "L1", 256, NULL, 2, &lampica1_handle);
+  xTaskCreate(Task2_Lampica, "L2", 256, NULL, 2, &lampica2_handle);
+
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_TIMERS */
+  // Pokrećemo TIM1 u interrupt modu za Drugi zadatak
+  HAL_TIM_Base_Start_IT(&htim1);
+  /* USER CODE END RTOS_TIMERS */
+
+  osKernelStart();
+
+  while (1)
+  {
+  }
+}
+
+static void MX_GPIO_Init(void)
+{
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+
+  // Konfiguriramo pinove za Prvi zadatak (A1, A3, A5) 
+  // i za Drugi zadatak možemo dodati npr. A6 i A7 ako već nisu zauzeti
+  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7, GPIO_PIN_RESET);
+
+  GPIO_InitStruct.Pin = GPIO_PIN_1|GPIO_PIN_3|GPIO_PIN_5|GPIO_PIN_6|GPIO_PIN_7;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+}
+
+/* USER CODE BEGIN 4 */
+
+// ==========================================
+// RJEŠENJE PRVOG ZADATKA (Dirigent)
+// ==========================================
+void Task1_Zad1(void *argument)
+{
+    for(;;)
+    {
+        vTaskSuspend(NULL);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_SET);
+        for(int i=0; i<500000; i++){}
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_1, GPIO_PIN_RESET);
+    }
+}
+
+void Task2_Zad1(void *argument)
+{
+    for(;;)
+    {
+        vTaskSuspend(NULL);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_SET);
+        for(int i=0; i<500000; i++){}
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_3, GPIO_PIN_RESET);
+    }
+}
+
+void Task3_Zad1(void *argument)
+{
+    for(;;)
+    {
+        vTaskSuspend(NULL);
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+        for(int i=0; i<500000; i++){}
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+    }
+}
+
+void Task4_Dirigent(void *argument)
+{
+    for(;;)
+    {
+        // Traženi redoslijed: task1, task2, task1, task2, task3, task3
+        vTaskResume(t1_handle);
+        vTaskDelay(100);
+        
+        vTaskResume(t2_handle);
+        vTaskDelay(100);
+        
+        vTaskResume(t1_handle);
+        vTaskDelay(100);
+        
+        vTaskResume(t2_handle);
+        vTaskDelay(100);
+        
+        vTaskResume(t3_handle);
+        vTaskDelay(100);
+        
+        vTaskResume(t3_handle);
+        vTaskDelay(1000); // Pauza prije idućeg ponavljanja kruga
+    }
+}
+
+// ==========================================
+// RJEŠENJE DRUGOG ZADATKA (Timer Interrupt)
+// ==========================================
+
+// Prekid tajmera (TIM1) glumi budilicu
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+    if (htim->Instance == TIM1)
+    {
+        brojac_sekundi++;
+        
+        // Nakon zadatog broja otkucaja (npr. svake 2 sekunde) budimo prvu lampicu
+        if (brojac_sekundi >= 2)
+        {
+            brojac_sekundi = 0;
+            vTaskResume(lampica1_handle);
+        }
+    }
+}
+
+void Task1_Lampica(void *argument)
+{
+    for(;;)
+    {
+        vTaskSuspend(NULL); // Čeka signal od tajmera
+        
+        // Pali lampicu 1 (pin A6)
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_SET);
+        for(int i=0; i<1000000; i++){}
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
+        
+        // Nakon što se ugasila, odmah pali drugu lampicu (krug se nastavlja)
+        vTaskResume(lampica2_handle);
+    }
+}
+
+void Task2_Lampica(void *argument)
+{
+    for(;;)
+    {
+        vTaskSuspend(NULL); // Čeka da ga Task1_Lampica probudi
+        
+        // Pali lampicu 2 (pin A7)
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_SET);
+        for(int i=0; i<1000000; i++){}
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_7, GPIO_PIN_RESET);
+        
+        // Ovdje završava krug lampica, čekamo idući otkucaj tajmera
+    }
+}
+
+/* USER CODE END 4 */
+
+void StartDefaultTask(void *argument)
+{
+  for(;;)
+  {
+    osDelay(1);
+  }
+}
