@@ -72,15 +72,45 @@ ovdje pišeš
 
 U fajlu ima mnogo praznih blokova. U njih **ništa** ne pišeš. Prazni ostaju:
 
-`Includes`, `PTD`, `PM`, `0`, `1`, `Init`, `SysInit`, `2`, `RTOS_MUTEX`, `RTOS_SEMAPHORES`, `RTOS_TIMERS`, `RTOS_QUEUES`, `RTOS_EVENTS`, `WHILE`, `3`, `MX_GPIO_Init_1`, `MX_GPIO_Init_2`, `5`.
+`PTD`, `PM`, `0`, `1`, `Init`, `SysInit`, `2`, `RTOS_MUTEX`, `RTOS_SEMAPHORES`, `RTOS_TIMERS`, `RTOS_QUEUES`, `RTOS_EVENTS`, `WHILE`, `3`, `MX_GPIO_Init_1`, `MX_GPIO_Init_2`, `5`.
 
-Pišeš samo u četiri bloka: **PD**, **PV**, **PFP**, **RTOS_THREADS** i **4**.
+Pišeš u šest blokova: **Includes**, **PD**, **PV**, **PFP**, **RTOS_THREADS** i **4**.
 
-Da nađeš blok: u `main.c` pritisni `Ctrl+F` i ukucaj tačan komentar, na primjer `USER CODE BEGIN PD`.
+Da nađeš blok: u `main.c` pritisni `Ctrl+F` i ukucaj tačan komentar, na primjer `USER CODE BEGIN Includes`.
 
 ---
 
-## Blok 1 — `USER CODE BEGIN PD`
+## Blok 1 — `USER CODE BEGIN Includes`
+
+Ovo je prvi tvoj kod u fajlu, odmah ispod Cubeovih linija `#include "main.h"` i `#include "cmsis_os.h"`. Te dvije Cubeove linije ne diraš.
+
+Nađi:
+
+```c
+/* USER CODE BEGIN Includes */
+
+/* USER CODE END Includes */
+```
+
+Izmjenjuješ ga u:
+
+```c
+/* USER CODE BEGIN Includes */
+#include "FreeRTOS.h"
+#include "task.h"
+/* USER CODE END Includes */
+```
+
+| Linija | Šta znači |
+|---|---|
+| `#include "FreeRTOS.h"` | Osnovno zaglavlje FreeRTOS-a. Tu su `pdMS_TO_TICKS`, `pdTRUE`, `portMAX_DELAY`. Ime fajla ima veliko `F` i veliko `R`. |
+| `#include "task.h"` | Tu su `xTaskCreate`, `vTaskDelay`, `vTaskSuspend`, `vTaskResume`, `xTaskNotifyGive`, `ulTaskNotifyTake` i tip `TaskHandle_t`. |
+
+Bez `task.h` kompajler u funkciji ne vidi `vTaskSuspend` ni `TaskHandle_t`. `cmsis_os.h` ih ponekad povuče sam, ali na ispitu ova dva `#include` ipak upišeš ovdje.
+
+---
+
+## Blok 2 — `USER CODE BEGIN PD`
 
 Nađi:
 
@@ -113,7 +143,7 @@ Ako profesor na ispitu kaže da dugi blok traje 1000 ms, mijenjaš samo `600u` u
 
 ---
 
-## Blok 2 — `USER CODE BEGIN PV`
+## Blok 3 — `USER CODE BEGIN PV`
 
 Nađi:
 
@@ -152,7 +182,7 @@ Zašto jedna promjenljiva `koliko`, a ne tri: isti task ponekad gori dugo, ponek
 
 ---
 
-## Blok 3 — `USER CODE BEGIN PFP`
+## Blok 4 — `USER CODE BEGIN PFP`
 
 Nađi:
 
@@ -190,7 +220,7 @@ Tačka-zarez na kraju prototipa je obavezna. U tijelu funkcije, dolje, tačka-za
 
 ---
 
-## Blok 4 — `USER CODE BEGIN RTOS_THREADS`
+## Blok 5 — `USER CODE BEGIN RTOS_THREADS`
 
 Ovo je unutar funkcije `main`, ne na vrhu fajla. Nađi:
 
@@ -270,7 +300,7 @@ Redoslijed kreiranja: prvo tri lampice, svaka odmah suspendovana, pa vodja na kr
 
 ---
 
-## Blok 5 — `USER CODE BEGIN 4`
+## Blok 6 — `USER CODE BEGIN 4`
 
 Ovo je ispod funkcije `MX_GPIO_Init`, a iznad `StartDefaultTask`. Nađi:
 
@@ -474,14 +504,30 @@ Poslije drugog `Pusti(t3, KRATKO)` petlja krene ispočetka, odmah na `Pusti(t1, 
 
 Ovo nije tvoj kod. Ako ga prepišeš, sljedeći Generate može da se poremeti, ili napraviš duplikat.
 
-Na vrhu `main.c`:
+Na vrhu `main.c` Cube sam napiše:
 
 ```c
 #include "main.h"
 #include "cmsis_os.h"
 ```
 
-`main.h` povlači HAL, pa rade `HAL_GPIO_WritePin` i imena pinova. `cmsis_os.h` povlači FreeRTOS, pa rade `xTaskCreate`, `vTaskDelay`, `vTaskSuspend` i `TaskHandle_t`. Zato u blok `Includes` ne moraš ništa dodavati.
+Te dvije linije ne pišeš ti. One su izvan `USER CODE` bloka. `main.h` povlači HAL, pa rade `HAL_GPIO_WritePin` i imena pinova.
+
+Ispod njih nađi prazan blok i upiši FreeRTOS zaglavlja. To je prvi tvoj kod u fajlu:
+
+```c
+/* USER CODE BEGIN Includes */
+#include "FreeRTOS.h"
+#include "task.h"
+/* USER CODE END Includes */
+```
+
+| Linija | Šta znači |
+|---|---|
+| `#include "FreeRTOS.h"` | Osnovno zaglavlje FreeRTOS-a. Tu su `pdMS_TO_TICKS`, `pdTRUE`, `portMAX_DELAY` i `NULL` koji FreeRTOS koristi. Ime fajla ima veliko `F` i veliko `R`. `freeRTOS.h` nije isto ime. |
+| `#include "task.h"` | Tu su `xTaskCreate`, `vTaskDelay`, `vTaskSuspend`, `vTaskResume`, `xTaskNotifyGive`, `ulTaskNotifyTake` i tip `TaskHandle_t`. |
+
+Bez `task.h` kompajler u funkciji ne vidi `vTaskSuspend` ni `TaskHandle_t` i build staje. `cmsis_os.h` ih često povuče sam, ali na ispitu ih ipak upišeš u ovaj blok, da su vidljivi i da ne zavise od toga šta Cube stavi iznad.
 
 U `main`, redom:
 
@@ -576,7 +622,7 @@ Ako ipak vidiš `error:`, kopiraj tu prvu liniju. Ne cijeli ispis.
 ## Šta ponijeti na ispit, napamet
 
 1. Pinovi: PA1, PA3, PA5 kao GPIO_Output. SYS: Serial Wire i TIM1. FreeRTOS: CMSIS_V2.
-2. Četiri mjesta u `main.c`: `PD`, `PV`, `PFP`, `RTOS_THREADS`, i tijela u `4`.
+2. Šest mjesta u `main.c`: `Includes`, `PD`, `PV`, `PFP`, `RTOS_THREADS`, i tijela u `4`.
 3. Prioriteti u `xTaskCreate`: 3, 1, 2, vodja 4.
 4. Poslije svakog lampica-taska odmah `vTaskSuspend`. Vodja se ne suspenduje.
 5. `vTaskDelay` čeka. `HAL_Delay` ne koristiš.
