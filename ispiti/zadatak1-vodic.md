@@ -104,7 +104,7 @@ Izmjenjuješ ga u:
 | Linija | Šta znači |
 |---|---|
 | `#include "FreeRTOS.h"` | Osnovno zaglavlje FreeRTOS-a. Tu su `pdMS_TO_TICKS`, `pdTRUE`, `portMAX_DELAY`. Ime fajla ima veliko `F` i veliko `R`. |
-| `#include "task.h"` | Tu su `xTaskCreate`, `vTaskDelay`, `vTaskSuspend`, `vTaskResume`, `xTaskNotifyGive`, `ulTaskNotifyTake` i tip `TaskHandle_t`. |
+| `#include "task.h"` | Tu su `xTaskCreate`, `vTaskDelay`, `vTaskSuspend`, `vTaskResume`, `eTaskGetState` i tip `TaskHandle_t`. |
 
 Bez `task.h` kompajler u funkciji ne vidi `vTaskSuspend` ni `TaskHandle_t`. `cmsis_os.h` ih ponekad povuče sam, ali na ispitu ova dva `#include` ipak upišeš ovdje.
 
@@ -160,7 +160,6 @@ Iznad ovog bloka Cube je već napisao `defaultTask`. To ne brišeš. Svoj kod id
 static TaskHandle_t t1;
 static TaskHandle_t t2;
 static TaskHandle_t t3;
-static TaskHandle_t vodja;
 static volatile uint32_t koliko = KRATKO;
 /* USER CODE END PV */
 ```
@@ -172,7 +171,7 @@ static volatile uint32_t koliko = KRATKO;
 | `static` | Ime važi samo u ovom fajlu. Drugi fajl ne vidi `t1`. |
 | `TaskHandle_t` | Tip podatka za „pokazivač na task”. FreeRTOS ti kroz njega da task zaustaviš ili nastaviš. |
 | `t1` | Ručka Taska 1. Prazna je dok `xTaskCreate` ne upiše u nju pravi task. |
-| `t2`, `t3`, `vodja` | Isto, za ostala tri taska. |
+| `t2`, `t3` | Isto, za Task2 i Task3. Vodja nema ručku, jer ga niko ne zaustavlja. |
 | `volatile` | Vrijednost smije da se promijeni iz drugog taska. Kompajler je mora svaki put iznova pročitati, ne smije je zapamtiti u registru. |
 | `uint32_t` | Cijeli broj bez predznaka, 32 bita. Dovoljno velik za milisekunde. |
 | `koliko` | Koliko milisekundi trenutna lampica treba da gori. Vodja upisuje ovaj broj prije nego što pusti task. |
@@ -245,7 +244,7 @@ Komentar `/* add threads, ... */` smiješ obrisati. Zamijeniš cijeli blok ovim:
   xTaskCreate(Task3, "Task3", 256, NULL, 2, &t3);
   vTaskSuspend(t3);
 
-  xTaskCreate(Vodja, "Vodja", 256, NULL, 4, &vodja);
+  xTaskCreate(Vodja, "Vodja", 256, NULL, 4, NULL);
   /* USER CODE END RTOS_THREADS */
 ```
 
@@ -318,7 +317,10 @@ static void Pusti(TaskHandle_t task, uint32_t ms)
 {
   koliko = ms;
   vTaskResume(task);
-  ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+  while (eTaskGetState(task) != eSuspended)
+  {
+    vTaskDelay(pdMS_TO_TICKS(1));
+  }
 }
 
 static void Upali(uint16_t pin)
@@ -326,7 +328,6 @@ static void Upali(uint16_t pin)
   HAL_GPIO_WritePin(GPIOA, pin, GPIO_PIN_SET);
   vTaskDelay(pdMS_TO_TICKS(koliko));
   HAL_GPIO_WritePin(GPIOA, pin, GPIO_PIN_RESET);
-  xTaskNotifyGive(vodja);
   vTaskSuspend(NULL);
 }
 
@@ -389,19 +390,23 @@ Upiše trajanje u zajedničku kutiju. `ms` je broj koji je vodja poslao, `DUGO` 
 vTaskResume(task);
 ```
 
-Nastavi zaustavljen task. `task` je `t1`, `t2` ili `t3`. Od ovog trenutka taj task smije da radi. Pošto vodja ima veći prioritet, lampica još ne krene. Vodja i dalje drži procesor, dok sam sebe ne zaustavi sljedećom linijom.
+Nastavi zaustavljen task. `task` je `t1`, `t2` ili `t3`. Vodja ima veći prioritet, pa lampica još ne krene dok vodja sam ne sačeka u petlji ispod.
 
 ```c
-ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+while (eTaskGetState(task) != eSuspended)
+{
+  vTaskDelay(pdMS_TO_TICKS(1));
+}
 ```
 
-Vodja čeka poruku od lampice.
+Vodja gleda da li se lampica sama zaustavila.
 
-- `ulTaskNotifyTake` čeka task notification. To je brojač koji drugi task podigne.
-- `pdTRUE` znači: kad poruka stigne, obriši je. Sljedeće čekanje opet čeka novu poruku, ne staru.
-- `portMAX_DELAY` znači čekaj beskonačno. Nema isteka vremena.
+- `eTaskGetState(task)` vraća stanje tog taska.
+- `eSuspended` znači da je task na `vTaskSuspend` i da ne radi.
+- Dok stanje nije `eSuspended`, vodja čeka 1 ms i provjeri opet.
+- Taj `vTaskDelay(1)` pusti lampicu da dobije procesor, upali pin i odradi svoje vrijeme.
 
-Dok vodja čeka, on je blokiran. Tek tada lampica, koja ima manji prioritet, dobije procesor i uđe u `Upali`.
+Notify ovdje nema. Vodja ne čeka poruku. Čeka da task sam sebe zaustavi.
 
 ### Funkcija `Upali`
 
@@ -430,27 +435,19 @@ vTaskDelay(pdMS_TO_TICKS(koliko));
 - `pdMS_TO_TICKS` pretvori milisekunde u tickove FreeRTOS-a.
 - Tick je 1000 puta u sekundi, jer je `configTICK_RATE_HZ` jednak 1000. Zato je 300 ms jednako 300 tickova. Ako tick nije 1000, isti broj više ne znači 300 ms.
 
-Dok lampica čeka u `vTaskDelay`, vodja i dalje stoji u `ulTaskNotifyTake`. Niko drugi ne pali pin.
+Dok lampica čeka u `vTaskDelay`, vodja na svakih 1 ms vidi da task još nije suspendovan i opet sačeka. Niko drugi ne pali pin.
 
 ```c
 HAL_GPIO_WritePin(GPIOA, pin, GPIO_PIN_RESET);
 ```
 
-Ugasi istu lampicu. Gasi se **prije** poruke vodji, da sljedeća lampica ne gori u isto vrijeme.
-
-```c
-xTaskNotifyGive(vodja);
-```
-
-Pošalji poruku vodji: „gotova sam”. Vodja ima veći prioritet, pa se probudi odmah i izađe iz `ulTaskNotifyTake`.
+Ugasi istu lampicu prije nego što se task zaustavi, da sljedeća ne gori u isto vrijeme.
 
 ```c
 vTaskSuspend(NULL);
 ```
 
-Zaustavi task u kojem se ova linija nalazi. `NULL` znači „ja sama sebe”. Poslije ovoga task stoji na ovoj liniji dok vodja opet ne pozove `vTaskResume`.
-
-Poruka ide prije `vTaskSuspend`. Da se task prvo zaustavi, nikad ne bi stigao da pošalje poruku, i vodja bi čekao zauvik.
+Zaustavi task u kojem se ova linija nalazi. `NULL` znači „ja sama sebe”. Poslije ovoga stanje postane `eSuspended`, vodja izađe iz `while` petlje i pusti sljedeću lampicu.
 
 ### Task1, Task2, Task3
 
@@ -525,7 +522,7 @@ Ispod njih nađi prazan blok i upiši FreeRTOS zaglavlja. To je prvi tvoj kod u 
 | Linija | Šta znači |
 |---|---|
 | `#include "FreeRTOS.h"` | Osnovno zaglavlje FreeRTOS-a. Tu su `pdMS_TO_TICKS`, `pdTRUE`, `portMAX_DELAY` i `NULL` koji FreeRTOS koristi. Ime fajla ima veliko `F` i veliko `R`. `freeRTOS.h` nije isto ime. |
-| `#include "task.h"` | Tu su `xTaskCreate`, `vTaskDelay`, `vTaskSuspend`, `vTaskResume`, `xTaskNotifyGive`, `ulTaskNotifyTake` i tip `TaskHandle_t`. |
+| `#include "task.h"` | Tu su `xTaskCreate`, `vTaskDelay`, `vTaskSuspend`, `vTaskResume`, `eTaskGetState` i tip `TaskHandle_t`. |
 
 Bez `task.h` kompajler u funkciji ne vidi `vTaskSuspend` ni `TaskHandle_t` i build staje. `cmsis_os.h` ih često povuče sam, ali na ispitu ih ipak upišeš u ovaj blok, da su vidljivi i da ne zavise od toga šta Cube stavi iznad.
 
@@ -587,7 +584,7 @@ Ovo je sat za HAL. `htim` ovdje je argument funkcije, Cube ga je deklarisao u za
 2. Napravi se `defaultTask`, pa t1, t2, t3, i odmah se zaustave. Napravi se vodja.
 3. `osKernelStart` pusti scheduler.
 4. `defaultTask` je zaustavljen, pa vodja prvi uđe u petlju.
-5. `Pusti(t1, DUGO)` upiše 600 u `koliko`, nastavi t1 i čeka poruku.
+5. `Pusti(t1, DUGO)` upiše 600 u `koliko`, nastavi t1 i čeka dok se t1 sam ne zaustavi.
 6. Task1 upali PA1, čeka 600 ms, ugasi PA1, javi vodji, zaustavi se.
 7. Vodja isto uradi za t2, pa opet za t1 sa 300, pa za t2 sa 300, pa za t3 sa 300.
 8. Vodja sam čeka 300 ms. Sve je ugašeno. To je prekid između dva Task3.
